@@ -3,9 +3,9 @@ using static System.Globalization.CultureInfo;
 
 namespace PowerSupplies.Core;
 
-public sealed class Psh
+public sealed class Psh : IPowerSupply
 {
-    public string PshInfo
+    public string Info
     {
         get
         {
@@ -25,12 +25,17 @@ public sealed class Psh
         Disconnect();
     }
 
-    public double MeasureCurrent()
+    public void ResetTimer()
+    {
+        _startedTime = DateTime.Now;
+    }
+
+    public IEnumerable<IReadOnlyCurrentPoint> MeasureCurrent()
     {
         lock (_locker)
         {
             _port.WriteLine("CHAN1:MEAS:CURR ?");
-            return double.Parse(_port.ReadLine().Trim(), InvariantCulture);
+            yield return new CurrentPoint(DateTime.Now - _startedTime, double.Parse(_port.ReadLine().Trim(), InvariantCulture));
         }
     }
 
@@ -97,6 +102,7 @@ public sealed class Psh
         return true;
     }
 
+    private DateTime _startedTime = DateTime.Now;
     private readonly object _locker = new();
     private readonly SerialPort _port = new()
     {

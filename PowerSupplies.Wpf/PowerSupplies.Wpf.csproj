@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net7.0-windows</TargetFramework>
@@ -6,7 +6,7 @@
     <UseWPF>true</UseWPF>
 	<PackageOutputPath Condition="'$(Configuration)' == 'Release'">D:\Nuget</PackageOutputPath>
 	<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-	<Version>2023.06.05.1000</Version>
+	<Version>2023.06.07.825</Version>
   </PropertyGroup>
 
   <ItemGroup>

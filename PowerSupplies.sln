@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.6.33723.286
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerSupplies.Core", "PowerSupplies.Core\PowerSupplies.Core.csproj", "{97F13B8E-8833-404D-9514-CC3FF69A9BB1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerSupplies.Core", "PowerSupplies.Core\PowerSupplies.Core.csproj", "{97F13B8E-8833-404D-9514-CC3FF69A9BB1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerSupplies.Wpf", "PowerSupplies.Wpf\PowerSupplies.Wpf.csproj", "{7653AB39-80BF-4A9E-BCD9-1ED289038EBD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerSupplies.Wpf", "PowerSupplies.Wpf\PowerSupplies.Wpf.csproj", "{7653AB39-80BF-4A9E-BCD9-1ED289038EBD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerSupplies.Xml", "PowerSupplies.Xml\PowerSupplies.Xml.csproj", "{CA52327A-3C1E-4F50-8464-E744C593BCFF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{7653AB39-80BF-4A9E-BCD9-1ED289038EBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7653AB39-80BF-4A9E-BCD9-1ED289038EBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7653AB39-80BF-4A9E-BCD9-1ED289038EBD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CA52327A-3C1E-4F50-8464-E744C593BCFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA52327A-3C1E-4F50-8464-E744C593BCFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA52327A-3C1E-4F50-8464-E744C593BCFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA52327A-3C1E-4F50-8464-E744C593BCFF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
