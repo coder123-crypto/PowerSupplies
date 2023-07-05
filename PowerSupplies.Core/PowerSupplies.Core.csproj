@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
 	  <PackageOutputPath Condition="'$(Configuration)' == 'Release'">D:\Nuget</PackageOutputPath>
 	  <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-	  <Version>2023.06.07.825</Version>
+	  <Version>2023.07.05.1731</Version>
   </PropertyGroup>
 
   <ItemGroup>

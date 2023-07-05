@@ -71,12 +71,10 @@ public abstract class HmpBase : IPowerSupply
 
         try
         {
-            Disconnect();
+            _port.Close();
 
-            _event.WaitOne();
             _port.PortName = port;
             _port.Open();
-            _event.Set();
 
             WriteLine("*IDN?");
             _ = _port.ReadLine();
