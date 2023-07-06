@@ -9,8 +9,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerSupplies.Wpf", "PowerS
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerSupplies.Xml", "PowerSupplies.Xml\PowerSupplies.Xml.csproj", "{CA52327A-3C1E-4F50-8464-E744C593BCFF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp1", "ConsoleApp1\ConsoleApp1.csproj", "{C7AA96B3-8CEC-4C34-AD23-82E5CA48101A}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,10 +27,6 @@ Global
 		{CA52327A-3C1E-4F50-8464-E744C593BCFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CA52327A-3C1E-4F50-8464-E744C593BCFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CA52327A-3C1E-4F50-8464-E744C593BCFF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C7AA96B3-8CEC-4C34-AD23-82E5CA48101A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C7AA96B3-8CEC-4C34-AD23-82E5CA48101A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C7AA96B3-8CEC-4C34-AD23-82E5CA48101A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C7AA96B3-8CEC-4C34-AD23-82E5CA48101A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

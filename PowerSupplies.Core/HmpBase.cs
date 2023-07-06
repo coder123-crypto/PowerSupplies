@@ -1,4 +1,6 @@
 ﻿using System.IO.Ports;
+using System.Threading.Channels;
+using Serial2Network.Core;
 using static System.Globalization.CultureInfo;
 
 namespace PowerSupplies.Core;
@@ -9,13 +11,11 @@ public abstract class HmpBase : IPowerSupply
     {
         get
         {
-            WriteLine("*IDN?");
-            var args = _port.ReadLine().Split(',');
-            string info = $"{args[1]} #{args[2]}";
-            Wait();
-            return info;
+            var args = _info.Split(',');
+            return $"{args[1]} #{args[2]}";
         }
     }
+    private string _info = string.Empty;
 
     public HmpBase(int channels, params double[] maximumPowers)
     {
@@ -37,57 +37,72 @@ public abstract class HmpBase : IPowerSupply
 
     public IEnumerable<IReadOnlyCurrentPoint> MeasureCurrent()
     {
-        for (int i = 0; i < _channels; i++)
+        lock (_locker)
         {
-            _event.WaitOne();
-            yield return new CurrentPoint(DateTime.Now - _startedTime, MeasureCurrentRequest(i));
-            _event.Set();
+            for (int channel = 0; channel < _channels; channel++)
+            {
+                yield return new CurrentPoint(DateTime.Now - _startedTime, MeasureCurrentRequest(channel + 1));
+            }
         }
     }
 
     public void SetOutput(bool output)
     {
-        _event.WaitOne();
-
-        for (int i = 0; i < _channels; i++)
+        lock (_locker)
         {
-            SetOutput(i + 1, output ? 1 : 0);
+            for (int channel = 0; channel < _channels; channel++)
+            {
+                SetOutput(channel + 1, output ? 1 : 0);
+            }
+            SetOutput(output ? 1 : 0);
         }
-        SetOutput(output ? 1 : 0);
-
-        _event.Set();
     }
 
     public void Disconnect()
     {
-        _event.WaitOne();
-        _port.Close();
-        _event.Set();
+        lock (_locker)
+        {
+            _client.Disconnect();
+        }
     }
 
     public bool Connect(string port)
     {
-        _event.WaitOne();
-
         try
         {
-            _port.Close();
+            Disconnect();
 
-            _port.PortName = port;
-            _port.Open();
-
-            WriteLine("*IDN?");
-            _ = _port.ReadLine();
-            Wait();
-            WriteLine("SYST:MIX");
+            lock (_locker)
+            {
+                _client.Connect(port);
+                WriteLine("*IDN?");
+                _ = _client.ReadLine();
+                Wait();
+                WriteLine("SYST:MIX");
+            }
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+        
+        try
+        {
+            lock (_locker)
+            {
+                WriteLine("*IDN?");
+                _info = _client.ReadLine();
+                if (!_info.StartsWith("HAMEG"))
+                {
+                    return false;
+                }
+            }
         }
         catch (TimeoutException)
         {
-            _event.Set();
             return false;
         }
 
-        _event.Set();
 
         return true;
     }
@@ -99,11 +114,12 @@ public abstract class HmpBase : IPowerSupply
             current = _maximumPowers[channel - 1] / voltage;
         }
 
-        _event.WaitOne();
-        Request("INST:NSEL", channel);
-        Request("VOLT", voltage);
-        Request("CURR", current);
-        _event.Set();
+        lock (_locker)
+        {
+            Request("INST:NSEL", channel);
+            Request("VOLT", voltage);
+            Request("CURR", current);
+        }
     }
 
     private void SetOutput(int channel, int output)
@@ -119,12 +135,11 @@ public abstract class HmpBase : IPowerSupply
 
     private void Request(string request, int value)
     {
-
         WriteLine($"{request} {value}");
         Wait();
 
         WriteLine($"{request}?");
-        int answer = int.Parse(_port.ReadLine().Trim());
+        int answer = int.Parse(_client.ReadLine().Trim());
         if (answer != value)
         {
             throw new Exception($"Запрос {request} {value} не выполнен");
@@ -135,11 +150,11 @@ public abstract class HmpBase : IPowerSupply
     private void Request(string request, double value)
     {
 
-        WriteLine($"{request} {value.ToString(InvariantCulture)}");
+        WriteLine($"{request} {value.ToString("F2", InvariantCulture)}");
         Wait();
 
         WriteLine($"{request}?");
-        double answer = double.Parse(_port.ReadLine().Trim(), InvariantCulture);
+        double answer = double.Parse(_client.ReadLine().Trim(), InvariantCulture);
         if (Math.Abs(answer - value) > 0.05)
         {
             throw new Exception($"Запрос {request} {value} не выполнен");
@@ -150,7 +165,7 @@ public abstract class HmpBase : IPowerSupply
     private double Request(string request)
     {
         WriteLine($"{request}?");
-        double r = double.Parse(_port.ReadLine().Trim(), InvariantCulture);
+        double r = double.Parse(_client.ReadLine().Trim(), InvariantCulture);
         Wait();
         return r;
     }
@@ -168,12 +183,12 @@ public abstract class HmpBase : IPowerSupply
 
         while (resp != 1 && count < 10)
         {
-            _port.ReadExisting();
+            _client.ReadExisting();
 
             try
             {
                 WriteLine("*OPC?");
-                resp = int.Parse(_port.ReadLine().Trim());
+                resp = int.Parse(_client.ReadLine().Trim());
             }
             catch (Exception)
             {
@@ -192,23 +207,26 @@ public abstract class HmpBase : IPowerSupply
         }
         _lastTimeWriteToPort = DateTime.Now;
 
-        _port.WriteLine(text);
+        _client.WriteLine(text);
     }
 
     private DateTime _startedTime = DateTime.Now;
     private DateTime _lastTimeWriteToPort = DateTime.Now;
     private readonly TimeSpan _writeDelay = TimeSpan.FromMilliseconds(50);
-    private readonly SerialPort _port = new()
+    private readonly Client _client = new()
     {
-        BaudRate = 9600,
-        StopBits = StopBits.One,
-        Handshake = Handshake.None,
-        Parity = Parity.None,
-        WriteTimeout = 5000,
-        DataBits = 8,
-        ReadBufferSize = 4096,
-        ReadTimeout = 5000,
-        WriteBufferSize = 4096
+        SerialPortOptions =
+        {
+            BaudRate = 9600,
+            StopBits = StopBits.One,
+            Handshake = Handshake.None,
+            Parity = Parity.None,
+            WriteTimeout = 5000,
+            DataBits = 8,
+            ReadBufferSize = 4096,
+            ReadTimeout = 5000,
+            WriteBufferSize = 4096
+        }
     };
-    private readonly AutoResetEvent _event = new(true);
+    private readonly object _locker = new();
 }

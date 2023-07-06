@@ -1,4 +1,5 @@
-﻿using System.IO.Ports;
+﻿using Serial2Network.Core;
+using System.IO.Ports;
 using static System.Globalization.CultureInfo;
 
 namespace PowerSupplies.Core;
@@ -11,9 +12,9 @@ public sealed class Psh : IPowerSupply
         {
             lock (_locker)
             {
-                _port.WriteLine("*IDN?");
+                _client.WriteLine("*IDN?");
 
-                string line = _port.ReadLine();
+                string line = _client.ReadLine();
                 var args = line.Split(',');
                 return $"{args[1]} №{args[2]}";
             }
@@ -34,8 +35,8 @@ public sealed class Psh : IPowerSupply
     {
         lock (_locker)
         {
-            _port.WriteLine("CHAN1:MEAS:CURR ?");
-            yield return new CurrentPoint(DateTime.Now - _startedTime, double.Parse(_port.ReadLine().Trim(), InvariantCulture));
+            _client.WriteLine("CHAN1:MEAS:CURR ?");
+            yield return new CurrentPoint(DateTime.Now - _startedTime, double.Parse(_client.ReadLine().Trim(), InvariantCulture));
         }
     }
 
@@ -43,7 +44,7 @@ public sealed class Psh : IPowerSupply
     {
         lock (_locker)
         {
-            _port.WriteLine($"CHAN1: VOLT {voltage.ToString(InvariantCulture)}; CURR {current.ToString(InvariantCulture)}");
+            _client.WriteLine($"CHAN1: VOLT {voltage.ToString(InvariantCulture)}; CURR {current.ToString(InvariantCulture)}");
         }
     }
 
@@ -51,7 +52,7 @@ public sealed class Psh : IPowerSupply
     {
         lock (_locker)
         {
-            _port.WriteLine(output ? ":OUTPut:STATe 1" : ":OUTPut:STATe 0");
+            _client.WriteLine(output ? ":OUTPut:STATe 1" : ":OUTPut:STATe 0");
         }
     }
 
@@ -59,7 +60,7 @@ public sealed class Psh : IPowerSupply
     {
         lock (_locker)
         {
-            _port.Close();
+            _client.Disconnect();
         }
     }
 
@@ -71,13 +72,12 @@ public sealed class Psh : IPowerSupply
 
             lock (_locker)
             {
-                _port.PortName = port;
-                _port.Open();
-                _port.WriteLine("*IDN?");
-                _port.ReadLine();
+                _client.Connect(port);
+                _client.WriteLine("*IDN?");
+                _ = _client.ReadLine();
             }
         }
-        catch (TimeoutException)
+        catch (Exception)
         {
         }
 
@@ -85,9 +85,9 @@ public sealed class Psh : IPowerSupply
         {
             lock (_locker)
             {
-                _port.WriteLine("*IDN?");
+                _client.WriteLine("*IDN?");
 
-                string line = _port.ReadLine();
+                string line = _client.ReadLine();
                 if (!line.StartsWith("GW", StringComparison.Ordinal))
                 {
                     return false;
@@ -104,16 +104,19 @@ public sealed class Psh : IPowerSupply
 
     private DateTime _startedTime = DateTime.Now;
     private readonly object _locker = new();
-    private readonly SerialPort _port = new()
+    private readonly Client _client = new()
     {
-        BaudRate = 9600,
-        DataBits = 8,
-        Parity = Parity.None,
-        StopBits = StopBits.One,
-        Handshake = Handshake.None,
-        ReadTimeout = 1000,
-        WriteTimeout = 1000,
-        ReadBufferSize = 4096,
-        WriteBufferSize = 4096
+        SerialPortOptions =
+        {
+            BaudRate = 9600,
+            StopBits = StopBits.One,
+            Handshake = Handshake.None,
+            Parity = Parity.None,
+            WriteTimeout = 1000,
+            DataBits = 8,
+            ReadBufferSize = 4096,
+            ReadTimeout = 1000,
+            WriteBufferSize = 4096
+        }
     };
 }
