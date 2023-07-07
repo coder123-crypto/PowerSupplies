@@ -4,13 +4,24 @@
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-	  <PackageOutputPath Condition="'$(Configuration)' == 'Release'">D:\Nuget</PackageOutputPath>
+	  <PackageOutputPath>D:\Nuget</PackageOutputPath>
 	  <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-	  <Version>2023.07.05.1731</Version>
+	  <Version>2023.07.07.1523</Version>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="System.IO.Ports" Version="7.0.0" />
+    <PackageReference Include="Google.Protobuf" Version="3.21.9" />
+    <PackageReference Include="Grpc.Net.Client" Version="2.50.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.50.0">
+	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	    <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
   </ItemGroup>
+
+	<ItemGroup>
+		<Protobuf Include="Protos\Hmp.proto" GrpcServices="Client" />
+		<Protobuf Include="Protos\Psh.proto" GrpcServices="Client" />
+	</ItemGroup>
 
 </Project>

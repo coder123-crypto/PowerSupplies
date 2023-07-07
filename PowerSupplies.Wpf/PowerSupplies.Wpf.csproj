@@ -4,9 +4,9 @@
     <TargetFramework>net7.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
-	<PackageOutputPath Condition="'$(Configuration)' == 'Release'">D:\Nuget</PackageOutputPath>
+	<PackageOutputPath>D:\Nuget</PackageOutputPath>
 	<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-	<Version>2023.07.05.1731</Version>
+	<Version>2023.07.07.1523</Version>
   </PropertyGroup>
 
   <ItemGroup>

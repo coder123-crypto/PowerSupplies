@@ -1,24 +1,8 @@
-﻿using System.IO.Ports;
-using static System.Globalization.CultureInfo;
-
-namespace PowerSupplies.Core;
+﻿namespace PowerSupplies.Core;
 
 public sealed class Psh : IPowerSupply
 {
-    public string Info
-    {
-        get
-        {
-            lock (_locker)
-            {
-                _port.WriteLine("*IDN?");
-
-                string line = _port.ReadLine();
-                var args = line.Split(',');
-                return $"{args[1]} №{args[2]}";
-            }
-        }
-    }
+    public string Info => _psh?.PshInfo ?? string.Empty;
 
     ~Psh()
     {
@@ -34,8 +18,7 @@ public sealed class Psh : IPowerSupply
     {
         lock (_locker)
         {
-            _port.WriteLine("CHAN1:MEAS:CURR ?");
-            yield return new CurrentPoint(DateTime.Now - _startedTime, double.Parse(_port.ReadLine().Trim(), InvariantCulture));
+            yield return new CurrentPoint(DateTime.Now - _startedTime, _psh!.MeasureCurrent());
         }
     }
 
@@ -43,7 +26,7 @@ public sealed class Psh : IPowerSupply
     {
         lock (_locker)
         {
-            _port.WriteLine($"CHAN1: VOLT {voltage.ToString(InvariantCulture)}; CURR {current.ToString(InvariantCulture)}");
+            _psh!.SetVoltageCurrent(voltage, current);
         }
     }
 
@@ -51,7 +34,7 @@ public sealed class Psh : IPowerSupply
     {
         lock (_locker)
         {
-            _port.WriteLine(output ? ":OUTPut:STATe 1" : ":OUTPut:STATe 0");
+            _psh!.SetOutput(output);
         }
     }
 
@@ -59,61 +42,36 @@ public sealed class Psh : IPowerSupply
     {
         lock (_locker)
         {
-            _port.Close();
+            _psh?.Close();
         }
     }
 
-    public bool Connect(string port)
+    public void Connect(string connectionString)
     {
-        try
-        {
-            Disconnect();
+        Disconnect();
 
-            lock (_locker)
+        lock (_locker)
+        {
+            if (connectionString.StartsWith("COM"))
             {
-                _port.PortName = port;
-                _port.Open();
-                _port.WriteLine("*IDN?");
-                _port.ReadLine();
+                var serial = new Local.Psh();
+                serial.Open(connectionString);
+                _psh = serial;
             }
-        }
-        catch (TimeoutException)
-        {
-        }
-
-        try
-        {
-            lock (_locker)
+            else
             {
-                _port.WriteLine("*IDN?");
+                string[] args = connectionString.Split(":");
 
-                string line = _port.ReadLine();
-                if (!line.StartsWith("GW", StringComparison.Ordinal))
-                {
-                    return false;
-                }
+                var proto = new Remote.Psh();
+                proto.Connect($"http://{args[0]}:{args[1]}");
+                proto.Open(args[2]);
+                _psh = proto;
             }
-        }
-        catch (TimeoutException)
-        {
-            return false;
-        }
 
-        return true;
+        }
     }
 
     private DateTime _startedTime = DateTime.Now;
     private readonly object _locker = new();
-    private readonly SerialPort _port = new()
-    {
-        BaudRate = 9600,
-        DataBits = 8,
-        Parity = Parity.None,
-        StopBits = StopBits.One,
-        Handshake = Handshake.None,
-        ReadTimeout = 1000,
-        WriteTimeout = 1000,
-        ReadBufferSize = 4096,
-        WriteBufferSize = 4096
-    };
+    private IPsh? _psh;
 }

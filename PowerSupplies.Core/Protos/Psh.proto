@@ -1,0 +1,50 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "PshService";
+
+package Psh;
+
+service PshService {
+	rpc Open (Request) returns (Reply);
+	rpc Close (Request) returns (Reply);
+	rpc MeasureCurrent (MeasureCurrentRequest) returns (MeasureCurrentReply);
+	rpc SetVoltageCurrent (SetVoltageCurrentRequest) returns (Reply);
+	rpc SetOutput (OutputRequest) returns (Reply);
+	rpc GetInfo (InfoRequest) returns (InfoReply);
+}
+
+message Request {
+	string content = 1;
+}
+
+message Reply {
+	int32 status = 1;
+	string error = 2;
+}
+
+message MeasureCurrentRequest {
+}
+
+message MeasureCurrentReply {
+	int32 status = 1;
+	double value = 2;
+	string error = 3;
+}
+
+message SetVoltageCurrentRequest {
+	double voltage = 1;
+	double current = 2;
+}
+
+message OutputRequest {
+	bool output = 1;
+}
+
+message InfoRequest {
+}
+
+message InfoReply {
+	int32 status = 1;
+	string info = 2;
+	string error = 3;
+}
