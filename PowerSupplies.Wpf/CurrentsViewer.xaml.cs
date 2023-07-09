@@ -70,7 +70,6 @@ public partial class CurrentsViewer
     }
     #endregion
 
-
     static CurrentsViewer()
     {
         ColorProperty = DependencyProperty.Register(
