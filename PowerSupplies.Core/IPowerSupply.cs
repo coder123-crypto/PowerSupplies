@@ -4,11 +4,9 @@ public interface IPowerSupply
 {
     string Info { get; }
 
-    void Connect(string port);
+    double MeasureCurrent();
 
-    void Disconnect();
+    void SetVoltageCurrent(double voltage, double current);
 
     void SetOutput(bool output);
-
-    IEnumerable<IReadOnlyCurrentPoint> MeasureCurrent();
 }

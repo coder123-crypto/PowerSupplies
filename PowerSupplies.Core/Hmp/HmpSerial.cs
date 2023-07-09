@@ -1,13 +1,13 @@
 ﻿using System.IO.Ports;
 using static System.Globalization.CultureInfo;
 
-namespace PowerSupplies.Core.Local;
+namespace PowerSupplies.Core.Hmp;
 
-public class HmpBase : IHmp
+public class HmpSerial : IMultiChannelsPowerSupply
 {
-    public string HmpInfo { get; private set; } = string.Empty;
+    public string Info { get; private set; } = string.Empty;
 
-    ~HmpBase()
+    ~HmpSerial()
     {
         Close();
     }
@@ -38,7 +38,7 @@ public class HmpBase : IHmp
 
         WriteLine("*IDN?");
         string[] infos = _port.ReadLine().Split(",");
-        HmpInfo = $"{infos[1]} №{infos[2]}";
+        Info = $"{infos[1]} №{infos[2]}";
         Wait();
         WriteLine("SYST:MIX");
     }
@@ -139,7 +139,6 @@ public class HmpBase : IHmp
         _port.WriteLine(text);
     }
 
-    private DateTime _startedTime = DateTime.Now;
     private DateTime _lastTimeWriteToPort = DateTime.Now;
     private readonly TimeSpan _writeDelay = TimeSpan.FromMilliseconds(50);
     private readonly SerialPort _port = new()

@@ -1,12 +1,8 @@
 ﻿namespace PowerSupplies.Core;
 
-public interface IHmp
+public interface IMultiChannelsPowerSupply
 {
-    string HmpInfo { get; }
-
-    void Open(string portName);
-
-    void Close();
+    string Info { get; }
 
     double MeasureCurrent(int channel);
 

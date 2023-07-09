@@ -1,13 +1,13 @@
 ﻿using System.IO.Ports;
 using static System.Globalization.CultureInfo;
 
-namespace PowerSupplies.Core.Local;
+namespace PowerSupplies.Core.Psh;
 
-public class Psh : IPsh
+public class PshSerial : IPowerSupply
 {
-    public string PshInfo { get; private set; } = string.Empty;
+    public string Info { get; private set; } = string.Empty;
 
-    ~Psh()
+    ~PshSerial()
     {
         Close();
     }
@@ -42,7 +42,7 @@ public class Psh : IPsh
         _port.WriteLine("*IDN?");
         string line = _port.ReadLine();
         var args = line.Split(',');
-        PshInfo = $"{args[1]} №{args[2]}";
+        Info = $"{args[1]} №{args[2]}";
     }
 
     private readonly SerialPort _port = new()

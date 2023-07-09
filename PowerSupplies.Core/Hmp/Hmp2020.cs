@@ -1,8 +1,8 @@
-﻿namespace PowerSupplies.Core;
+﻿namespace PowerSupplies.Core.Hmp;
 
 public class Hmp2020 : HmpBase
 {
-    public Hmp2020() : base(2, 180.0, 80.0)
+    public Hmp2020() : base(new[] { 32.0, 32.0 }, new[] { 10.0, 5.0 }, new[] { 160.0, 80 })
     {
     }
 
@@ -23,7 +23,7 @@ public class Hmp2020 : HmpBase
             throw new Exception($"Вольтаж по 2 каналу {voltage2}, что скорее всего ненормально");
         }
 
-        SetVoltageCurrent(1, voltage1, current1);
-        SetVoltageCurrent(2, voltage2, current2);
+        SetVoltageCurrent(voltage1, current1, 1);
+        SetVoltageCurrent(voltage2, current2, 2);
     }
 }

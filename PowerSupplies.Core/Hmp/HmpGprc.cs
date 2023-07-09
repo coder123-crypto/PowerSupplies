@@ -1,13 +1,13 @@
 ﻿using Grpc.Net.Client;
 using HmpService;
 
-namespace PowerSupplies.Core.Remote;
+namespace PowerSupplies.Core.Hmp;
 
-public class HmpBase : IHmp
+public class HmpGprc : IMultiChannelsPowerSupply
 {
-    public string HmpInfo { get; private set; } = string.Empty;
+    public string Info { get; private set; } = string.Empty;
 
-    ~HmpBase()
+    ~HmpGprc()
     {
         Close();
     }
@@ -22,29 +22,25 @@ public class HmpBase : IHmp
 
     public void Open(string portName)
     {
-        ThrowIfError(_client!.Open(new Request {Content = portName}));
-
-        var reply = _client!.GetInfo(new InfoRequest());
-        ThrowIfError(reply);
-        HmpInfo = reply.Info;
+        _id = Guid.Parse(ThrowIfError(_client!.Open(new OpenRequest { PortName = portName })).Id);
+        Info = ThrowIfError(_client!.GetInfo(new InfoRequest())).Info;
     }
 
     public void Close()
     {
-        ThrowIfError(_client!.Close(new Request()));
+        ThrowIfError(_client!.Close(new CloseRequest()));
     }
 
     public double MeasureCurrent(int channel)
     {
-        var reply = _client!.MeasureCurrent(new MeasureCurrentRequest { Channel = channel });
-        ThrowIfError(reply);
-        return reply.Value;
+        return ThrowIfError(_client!.MeasureCurrent(new MeasureCurrentRequest { Channel = channel, Id = _id.ToString() })).Value;
     }
 
     public void SetVoltageCurrent(double voltage, double current, int channel)
     {
         ThrowIfError(_client!.SetVoltageCurrent(new SetVoltageCurrentRequest
         {
+            Id = _id.ToString(),
             Channel = channel,
             Current = current,
             Voltage = voltage
@@ -53,33 +49,50 @@ public class HmpBase : IHmp
 
     public void SetOutput(bool output, int channel)
     {
-        ThrowIfError(_client!.SetOutput(new OutputRequest { Channel = channel, Output = output }));
+        ThrowIfError(_client!.SetOutput(new OutputRequest { Channel = channel, Output = output, Id = _id.ToString() }));
     }
 
-    private static void ThrowIfError(Reply reply)
+    private static OpenReply ThrowIfError(OpenReply reply)
     {
         if (reply.Status != 0)
         {
             throw new Exception(reply.Error);
         }
+
+        return reply;
     }
 
-    private static void ThrowIfError(MeasureCurrentReply reply)
+    private static Reply ThrowIfError(Reply reply)
     {
         if (reply.Status != 0)
         {
             throw new Exception(reply.Error);
         }
+
+        return reply;
     }
 
-    private static void ThrowIfError(InfoReply reply)
+    private static MeasureCurrentReply ThrowIfError(MeasureCurrentReply reply)
     {
         if (reply.Status != 0)
         {
             throw new Exception(reply.Error);
         }
+
+        return reply;
     }
 
+    private static InfoReply ThrowIfError(InfoReply reply)
+    {
+        if (reply.Status != 0)
+        {
+            throw new Exception(reply.Error);
+        }
+
+        return reply;
+    }
+
+    private Guid _id = Guid.Empty;
     private GrpcChannel? _channel;
     private HmpService.HmpService.HmpServiceClient? _client;
 }
