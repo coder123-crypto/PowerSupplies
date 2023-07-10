@@ -82,44 +82,22 @@ public abstract class HmpBase : IPowerSupplyListener
     {
         lock (_locker)
         {
-            switch (_hmp)
-            {
-                case HmpSerial local:
-                    local.Close();
-                    break;
-
-                case HmpGprc remote:
-                    remote.Close();
-                    break;
-            }
+            _hmp?.Close();
         }
     }
 
-    public void Connect(string connectionString)
+    public void Connect(string portName)
     {
         Disconnect();
 
         lock (_locker)
         {
-            if (connectionString.StartsWith("COM"))
-            {
-                var serial = new HmpSerial();
-                serial.Open(connectionString);
-                _hmp = serial;
-            }
-            else
-            {
-                string[] args = connectionString.Split(":");
-
-                var proto = new HmpGprc();
-                proto.Connect($"http://{args[0]}:{args[1]}");
-                proto.Open(args[2]);
-                _hmp = proto;
-            }
+            _hmp = new Hmp();
+            _hmp.Open(portName);
         }
     }
 
     private DateTime _startedTime = DateTime.Now;
-    private IMultiChannelsPowerSupply? _hmp;
+    private Hmp? _hmp;
     private readonly object _locker = new();
 }

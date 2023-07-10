@@ -3,7 +3,17 @@
 public abstract class PshBase : IPowerSupplyListener
 {
     #region IPowerSupply
-    public string Info => _psh?.Info ?? string.Empty;
+
+    public string Info
+    {
+        get
+        {
+            lock (_locker)
+            {
+                return _psh?.Info ?? string.Empty;
+            }
+        }
+    }
 
     public IEnumerable<IReadOnlyCurrentPoint> MeasureCurrent()
     {
@@ -69,45 +79,22 @@ public abstract class PshBase : IPowerSupplyListener
     {
         lock (_locker)
         {
-            switch (_psh)
-            {
-                case PshSerial local:
-                    local.Close();
-                    break;
-
-                case PshGrpc remote:
-                    remote.Close();
-                    break;
-            }
+            _psh?.Close();
         }
     }
 
-    public void Connect(string connectionString)
+    public void Connect(string portName)
     {
         Disconnect();
 
         lock (_locker)
         {
-            if (connectionString.StartsWith("COM"))
-            {
-                var serial = new PshSerial();
-                serial.Open(connectionString);
-                _psh = serial;
-            }
-            else
-            {
-                string[] args = connectionString.Split(":");
-
-                var proto = new PshGrpc();
-                proto.Connect($"http://{args[0]}:{args[1]}");
-                proto.Open(args[2]);
-                _psh = proto;
-            }
-
+            _psh = new Psh();
+            _psh.Open(portName);
         }
     }
 
     private DateTime _startedTime = DateTime.Now;
     private readonly object _locker = new();
-    private IPowerSupply? _psh;
+    private Psh? _psh;
 }

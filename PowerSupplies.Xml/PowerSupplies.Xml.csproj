@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
 	  <PackageOutputPath>D:\Nuget</PackageOutputPath>
 	  <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-	  <Version>2023.07.09.1425</Version>
+	  <Version>2023.07.10.1408</Version>
   </PropertyGroup>
 
   <ItemGroup>

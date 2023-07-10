@@ -6,6 +6,13 @@ public class Hmp2020 : HmpBase
     {
     }
 
+    public void SetOutput(bool output)
+    {
+        SetOutput(output, 1);
+        SetOutput(output, 2);
+        SetOutput(output, -1);
+    }
+
     public void SetVoltageCurrent(double voltage1, double current1, double voltage2, double current2)
     {
         if (current1 > 10.0)

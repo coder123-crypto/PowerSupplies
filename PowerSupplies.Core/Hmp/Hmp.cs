@@ -3,11 +3,11 @@ using static System.Globalization.CultureInfo;
 
 namespace PowerSupplies.Core.Hmp;
 
-public class HmpSerial : IMultiChannelsPowerSupply
+public class Hmp : IMultiChannelsPowerSupply
 {
     public string Info { get; private set; } = string.Empty;
 
-    ~HmpSerial()
+    ~Hmp()
     {
         Close();
     }

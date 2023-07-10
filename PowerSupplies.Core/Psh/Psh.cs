@@ -3,11 +3,11 @@ using static System.Globalization.CultureInfo;
 
 namespace PowerSupplies.Core.Psh;
 
-public class PshSerial : IPowerSupply
+public class Psh : IPowerSupply
 {
     public string Info { get; private set; } = string.Empty;
 
-    ~PshSerial()
+    ~Psh()
     {
         Close();
     }
