@@ -1,0 +1,54 @@
+﻿@using OxyPlot
+@using OxyPlot.Axes
+@using OxyPlot.Blazor
+@using OxyPlot.Series
+@using PowerSupplies.Core
+
+<BlazorPlotView Width="100%" Height="75vh" Model="_model" TrackerEnabled="false"/>
+
+@code
+{
+    public CurrentsViewer()
+    {
+        _model.Axes.Add(new TimeSpanAxis
+        {
+            Position = AxisPosition.Bottom,
+            Title = "Время",
+            IsPanEnabled = false,
+            MajorGridlineStyle = LineStyle.Dot,
+            IsZoomEnabled = false
+        });
+
+        _model.Axes.Add(new LinearAxis
+        {
+            Position = AxisPosition.Left,
+            Title = "Ток, А",
+            IsPanEnabled = false,
+            MajorGridlineStyle = LineStyle.Dot,
+            IsZoomEnabled = false
+        });
+
+        _series.ItemsSource = Points;
+        _model.Series.Add(_series);
+    }
+
+    [Parameter]
+    public IEnumerable<IReadOnlyCurrentPoint> Points { get; set; } = new List<IReadOnlyCurrentPoint>();
+	
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Run(() =>
+        {
+            _model.InvalidatePlot(true);
+        });
+    }
+
+    private readonly PlotModel _model = new PlotModel();
+    private readonly LineSeries _series = new LineSeries
+    {
+        MarkerStrokeThickness = 2.0,
+        Color = OxyColors.DodgerBlue,
+        DataFieldX = nameof(IReadOnlyCurrentPoint.Time),
+        DataFieldY = nameof(IReadOnlyCurrentPoint.Value)
+    };
+}
