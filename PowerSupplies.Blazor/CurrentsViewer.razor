@@ -1,54 +1,66 @@
-﻿@using OxyPlot
-@using OxyPlot.Axes
-@using OxyPlot.Blazor
-@using OxyPlot.Series
+﻿@using System.Collections.ObjectModel
+@using SkiaSharp
+@using LiveChartsCore
+@using LiveChartsCore.Defaults
+@using LiveChartsCore.Measure
+@using LiveChartsCore.SkiaSharpView
+@using LiveChartsCore.SkiaSharpView.Painting
+@using LiveChartsCore.SkiaSharpView.Blazor
 @using PowerSupplies.Core
 
-<BlazorPlotView Width="100%" Height="75vh" Model="_model" TrackerEnabled="false"/>
+<style>
+    .lvc-canvas-container canvas {
+        width: 100%;
+        height: 100%;
+    }
+</style>
+
+<CartesianChart Series="Series" XAxes="AxisX" YAxes="AxisY"  TooltipPosition="TooltipPosition.Hidden"/>
 
 @code
 {
+    public void Clear()
+    {
+        _points.Clear();
+    }
+
+    public void Add(IReadOnlyCurrentPoint point)
+    {
+        _points.Add(new TimeSpanPoint(point.Time, point.Value));
+    }
+
     public CurrentsViewer()
     {
-        _model.Axes.Add(new TimeSpanAxis
-        {
-            Position = AxisPosition.Bottom,
-            Title = "Время",
-            IsPanEnabled = false,
-            MajorGridlineStyle = LineStyle.Dot,
-            IsZoomEnabled = false
-        });
-
-        _model.Axes.Add(new LinearAxis
-        {
-            Position = AxisPosition.Left,
-            Title = "Ток, А",
-            IsPanEnabled = false,
-            MajorGridlineStyle = LineStyle.Dot,
-            IsZoomEnabled = false
-        });
-
-        _series.ItemsSource = Points;
-        _model.Series.Add(_series);
+        Series[0].Values = _points;
     }
 
-    [Parameter]
-    public IEnumerable<IReadOnlyCurrentPoint> Points { get; set; } = new List<IReadOnlyCurrentPoint>();
-	
-    protected override async Task OnInitializedAsync()
-    {
-        await Task.Run(() =>
+    private ISeries[] Series { get; } =
         {
-            _model.InvalidatePlot(true);
-        });
-    }
+            new LineSeries<TimeSpanPoint>
+            {
+                Fill = null,
+                Stroke = new SolidColorPaint(SKColors.DodgerBlue)
+                {
+                    StrokeThickness = 2.0f
+                },
+                GeometryStroke = null,
+                GeometrySize = 0.0,
+                LineSmoothness = 0.0
+            }
+        };
 
-    private readonly PlotModel _model = new PlotModel();
-    private readonly LineSeries _series = new LineSeries
-    {
-        MarkerStrokeThickness = 2.0,
-        Color = OxyColors.DodgerBlue,
-        DataFieldX = nameof(IReadOnlyCurrentPoint.Time),
-        DataFieldY = nameof(IReadOnlyCurrentPoint.Value)
-    };
+    private Axis[] AxisX { get; } =
+        {
+            new()
+            {
+                Name = "Время",
+                Labeler = x => TimeSpan.FromTicks((long) x).ToString(),
+                UnitWidth = TimeSpan.FromSeconds(1.0).Ticks,
+                MinStep = TimeSpan.FromSeconds(1.0).Ticks
+            }
+        };
+
+    private Axis[] AxisY { get; } = { new() { Name = "Ток" } };
+    
+    private readonly ICollection<TimeSpanPoint> _points = new ObservableCollection<TimeSpanPoint>();
 }

@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
 	<PackageOutputPath>D:\Nuget</PackageOutputPath>
 	<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-	<Version>2023.07.15.1258</Version>
+	<Version>2023.07.19.2221</Version>
   </PropertyGroup>
 
 
@@ -15,8 +15,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="LiveChartsCore.SkiaSharpView.Blazor" Version="2.0.0-beta.850" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.9" />
-    <PackageReference Include="OxyPlot.Blazor" Version="2.5.7" />
   </ItemGroup>
 
   <ItemGroup>
